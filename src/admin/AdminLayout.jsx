@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut, ShieldCheck, Bell, Search } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, ShieldCheck, Bell, Search, ArrowLeft } from 'lucide-react';
 import { adminLogout } from '../services/authService';
 
 export default function AdminLayout() {
@@ -21,14 +21,10 @@ export default function AdminLayout() {
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-slate-950 pb-20 lg:pb-0">
       
-      {/* 
-        SIDEBAR: 
-        - Telefonlarda (mobil): pastga yopishadi (fixed bottom-0), gorizontal ko'rinishda bo'ladi.
-        - Katta ekranda (lg:): odatdagiidek chap tomonda vertikal turadi.
-      */}
+      {/* SIDEBAR */}
       <aside className="fixed bottom-0 left-0 right-0 z-50 lg:static lg:w-72 bg-slate-900 border-t lg:border-t-0 lg:border-r border-slate-800/80 flex lg:flex-col justify-between items-center lg:items-stretch h-16 lg:h-screen px-4 lg:p-0 shadow-2xl lg:shadow-none">
         
-        {/* Yuqori qism (Logo - telefonlarda yashirinadi, chunki joy yetmaydi, faqat kompyuterda ko'rinadi) */}
+        {/* Yuqori qism (Logo - faqat kompyuterda ko'rinadi, telefonda yashirin) */}
         <div className="hidden lg:block">
           <div className="p-6 flex items-center gap-3 border-b border-slate-800/80">
             <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -41,7 +37,7 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        {/* Menyu linklari (Telefonlarda gorizontal navbar, kompyuterda vertikal) */}
+        {/* Menyu linklari */}
         <nav className="flex lg:flex-col lg:p-4 w-full justify-around lg:justify-start lg:gap-1.5">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -63,10 +59,8 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        {/* Pastki qism: Chiqish va Saytga qaytish 
-            (Telefonlarda joy tejash uchun faqat log-out va saytga qaytish icon'lari yoki to'liq tugma - 
-             agar sig'masa ularni maxsus menyuga yoki faqat kompyuterga qo'yish mumkin, hozir kompyuterda to'liq ko'rinadi) */}
-        <div className="hidden lg:block p-4 border-t border-slate-800/80 space-y-2">
+        {/* Pastki qism: Chiqish va Asosiy saytga qaytish (Faqat kompyuter uchun kengaytirilgan dizayn, telefonga teginilmadi) */}
+        <div className="hidden lg:flex lg:flex-col p-4 border-t border-slate-800/80 space-y-2 mt-auto">
           <button 
             onClick={handleLogout} 
             className="w-full py-2.5 px-4 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 hover:bg-indigo-500/20 transition-all cursor-pointer"
@@ -78,7 +72,7 @@ export default function AdminLayout() {
             onClick={() => window.location.href = 'https://skill-swap.up.railway.app'} 
             className="w-full py-2.5 px-4 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all cursor-pointer"
           >
-            Asosiy saytga qaytish
+            <ArrowLeft size={16} /> Asosiy saytga qaytish
           </button>
         </div>
       </aside>
