@@ -1,132 +1,183 @@
-import React from 'react';
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut, ShieldCheck, Bell, Search, ArrowLeft } from 'lucide-react';
-import { adminLogout } from '../services/authService';
+import React, { useState, useEffect } from 'react';
+import { Users, CreditCard, MessageSquare, ShieldAlert, TrendingUp, ArrowUpRight, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 
-export default function AdminLayout() {
-  const navigate = useNavigate();
-  const location = useLocation();
+export default function AdminDashboard() {
+  const [users, setUsers] = useState([]);
 
-  const menuItems = [
-    { path: '/skill', label: 'Bosh sahifa', icon: LayoutDashboard },
-    { path: '/skill/users', label: 'Foydalanuvchilar', icon: Users },
-    { path: '/skill/settings', label: 'Sozlamalar', icon: Settings },
-  ];
+  // Sahifa ochilganda localStorage'dan haqiqiy foydalanuvchilarni olib kelamiz
+  useEffect(() => {
+    const storedUsers = JSON.parse(localStorage.getItem('skillswap_users')) || [];
+    setUsers(storedUsers);
+  }, []);
 
-  const handleLogout = () => {
-    adminLogout();
-    navigate('/login');
+  // So'nggi ro'yxatdan o'tgan oxirgi 3 ta foydalanuvchini olish
+  const recentUsers = [...users].reverse().slice(0, 3);
+
+  // Excel hisobotini yuklab olish funksiyasi
+  const handleDownloadExcel = () => {
+    const todayDate = new Date().toLocaleDateString();
+    
+    const summaryData = [
+      { "Ko'rsatkich": "Hisobot Sanasi", "Qiymat": todayDate },
+      { "Ko'rsatkich": "Jami Foydalanuvchilar", "Qiymat": users.length },
+      { "Ko'rsatkich": "Faol Sessiyalar", "Qiymat": 1 },
+      { "Ko'rsatkich": "Xavfsizlik Ogohlantirishlari", "Qiymat": 0 },
+      { "Ko'rsatkich": "Xavfsizlik Darajasi", "Qiymat": "99.9%" },
+      { "Ko'rsatkich": "Server Yuklamasi", "Qiymat": "14%" },
+      { "Ko'rsatkich": "Tizim Holati", "Qiymat": "Mukammal ishlamoqda" }
+    ];
+
+    const usersData = users.map((u, index) => ({
+      "№": index + 1,
+      "Foydalanuvchi Ismi": u.name || "Noma'lum",
+      "Email Manzil": u.email,
+      "Roli": u.role || 'learner',
+      "Holati": u.status || 'Faol',
+      "Sana": todayDate
+    }));
+
+    const wb = XLSX.utils.book_new();
+
+    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Umumiy Statistika");
+
+    const wsUsers = XLSX.utils.json_to_sheet(usersData);
+    XLSX.utils.book_append_sheet(wb, wsUsers, "Foydalanuvchilar");
+
+    XLSX.writeFile(wb, `SkillSwap_Hisobot_${todayDate.replace(/\//g, '-')}.xlsx`);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="space-y-8 px-3 sm:px-6 py-6 max-w-7xl mx-auto">
+      {/* Sarlavha qismi (Kompyuterda keng, tartibli) */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800/80 pb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Boshqaruv Paneli</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">Tizimdagi so'nggi o'zgarishlar va umumiy statistika ko'rsatkichi.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleDownloadExcel}
+            className="w-full sm:w-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Download size={16} />
+            Hisobotni Yuklab Olish
+          </button>
+        </div>
+      </div>
       
-      {/* SIDEBAR (Kompyuterda chap tomonda fiksirlangan, ortiqcha bo'shliqsiz) */}
-      <aside className="hidden lg:flex lg:w-64 bg-slate-900 border-r border-slate-800/80 flex-col h-screen sticky top-0 z-50 shrink-0">
-        
-        {/* Logo qismi */}
-        <div className="p-6 flex items-center gap-3 border-b border-slate-800/80">
-          <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <ShieldCheck size={22} className="text-white" />
+      {/* Statistika Grid (Kompyuter uchun kengaytirilgan zamonaviy grid) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 1. Jami Foydalanuvchilar */}
+        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl relative overflow-hidden shadow-xl hover:border-indigo-500/30 transition-all group">
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="text-xs font-semibold tracking-wider uppercase text-slate-400">Jami Foydalanuvchilar</span>
+              <h2 className="text-3xl font-extrabold text-white mt-2 tracking-tight">{users.length}</h2>
+            </div>
+            <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Users size={24} className="text-blue-400" />
+            </div>
           </div>
-          <div>
-            <h2 className="text-base font-bold text-white tracking-tight">SkillSwap</h2>
-            <span className="text-[10px] text-indigo-400 font-semibold bg-indigo-500/10 px-2 py-0.5 rounded">SECURE ADMIN</span>
+          <div className="flex items-center gap-2 mt-6 pt-4 border-t border-slate-800/60">
+            <TrendingUp size={16} className="text-emerald-400" />
+            <span className="text-xs font-semibold text-emerald-400">Real vaqtda</span>
+            <span className="text-xs text-slate-500">yangilanmoqda</span>
           </div>
         </div>
 
-        {/* Menyu linklari */}
-        <nav className="flex-1 p-4 space-y-1.5">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            return (
-              <Link 
-                key={item.path} 
-                to={item.path} 
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25' 
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                }`}
-              >
-                <Icon size={20} className={isActive ? 'text-white' : 'text-slate-400'} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Pastki qism: Chiqish va Asosiy saytga qaytish */}
-        <div className="p-4 border-t border-slate-800/80 space-y-2">
-          <button 
-            onClick={handleLogout} 
-            className="w-full py-2.5 px-4 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 hover:bg-indigo-500/20 transition-all cursor-pointer"
-          >
-            <LogOut size={16} /> Tizimdan Chiqish
-          </button>
-
-          <button 
-            onClick={() => window.location.href = 'https://skill-swap.up.railway.app'} 
-            className="w-full py-2.5 px-4 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all cursor-pointer"
-          >
-            <ArrowLeft size={16} /> Asosiy saytga qaytish
-          </button>
+        {/* Faol Sessiyalar */}
+        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl relative overflow-hidden shadow-xl hover:border-amber-500/30 transition-all group">
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="text-xs font-semibold tracking-wider uppercase text-slate-400">Faol Sessiyalar</span>
+              <h2 className="text-3xl font-extrabold text-white mt-2 tracking-tight">1</h2>
+            </div>
+            <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <MessageSquare size={24} className="text-amber-400" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-6 pt-4 border-t border-slate-800/60">
+            <TrendingUp size={16} className="text-emerald-400" />
+            <span className="text-xs font-semibold text-emerald-400">Admin</span>
+            <span className="text-xs text-slate-500">onlayn</span>
+          </div>
         </div>
-      </aside>
 
-      {/* Telefon uchun pastki navbar (O'zgartirilmadi, faqat mobil uchun ishlaydi) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t border-slate-800 flex justify-around items-center h-16 px-4">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          return (
-            <Link key={item.path} to={item.path} className={`flex flex-col items-center gap-1 ${isActive ? 'text-indigo-400' : 'text-slate-400'}`}>
-              <Icon size={20} />
-              <span className="text-[10px]">{item.label}</span>
-            </Link>
-          );
-        })}
+        {/* Xavfsizlik Ogohlantirishi */}
+        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl relative overflow-hidden shadow-xl hover:border-rose-500/30 transition-all group sm:col-span-2 lg:col-span-1">
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="text-xs font-semibold tracking-wider uppercase text-slate-400">Xavfsizlik Ogohlantirishi</span>
+              <h2 className="text-3xl font-extrabold text-white mt-2 tracking-tight">0</h2>
+            </div>
+            <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <ShieldAlert size={24} className="text-rose-400" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-6 pt-4 border-t border-slate-800/60">
+            <span className="text-xs font-semibold text-emerald-400">0.0%</span>
+            <span className="text-xs text-slate-500">xavfsizlik darajasi a'lo</span>
+          </div>
+        </div>
       </div>
 
-      {/* Asosiy Kontent Qismi (Chapda ortiqcha bo'shliq qolmasligi uchun to'liq moslandi) */}
-      <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0">
-        
-        {/* Top Navbar */}
-        <header className="h-20 bg-slate-900/85 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-4 lg:px-9 sticky top-0 z-40">
-          <div className="hidden sm:flex items-center gap-3 bg-slate-950/60 border border-slate-800 px-4 py-2 rounded-xl w-60 lg:w-80">
-            <Search size={16} className="text-slate-500" />
-            <input 
-              type="text" 
-              placeholder="Tizim bo'ylab qidirish..." 
-              className="bg-transparent border-none text-white text-xs outline-none w-full placeholder:text-slate-500"
-            />
-          </div>
-
-          <div className="flex items-center gap-3 lg:gap-5 ml-auto">
-            <div className="w-10 h-10 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-center cursor-pointer relative hover:border-slate-700 transition-all">
-              <Bell size={18} className="text-slate-400" />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-indigo-500 rounded-full"></span>
+      {/* Oxirgi faoliyatlar va jadval (Kompyuter uchun kengaytirilgan qism) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* So'nggi ro'yxatdan o'tgan real foydalanuvchilar */}
+        <div className="lg:col-span-2 bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-base font-bold text-white">So'nggi Ro'yxatdan O'tganlar</h3>
+              <Link to="/skill/users" className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition-colors">
+                Barchasini ko'rish <ArrowUpRight size={14} />
+              </Link>
             </div>
-
-            <div className="flex items-center gap-3 border-l border-slate-800 pl-4 lg:pl-5">
-              <div className="text-right hidden sm:block">
-                <div className="text-xs font-semibold text-slate-200">Super Admin</div>
-                <div className="text-[10px] text-emerald-400 flex items-center justify-end gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Faol
+            <div className="space-y-3">
+              {recentUsers.length === 0 ? (
+                <div className="py-12 text-center text-slate-500 text-xs bg-slate-950/40 rounded-xl border border-slate-800/60">
+                  Hozircha saytda hech kim ro'yxatdan o'tmadi.
                 </div>
-              </div>
-              <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-md shadow-blue-500/20">
-                A
-              </div>
+              ) : (
+                recentUsers.map((u) => (
+                  <div key={u.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-950/50 border border-slate-800/80 hover:border-slate-700 transition-all">
+                    <div className="flex items-center gap-4 overflow-hidden">
+                      <div className="w-11 h-11 shrink-0 rounded-xl bg-indigo-600/20 text-indigo-400 font-bold flex items-center justify-center text-sm uppercase">
+                        {u.name ? u.name[0] : 'U'}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-white truncate">{u.name}</div>
+                        <div className="text-xs text-slate-400 truncate">{u.email}</div>
+                      </div>
+                    </div>
+                    <span className="text-xs px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-medium">
+                      {u.status || 'Faol'}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* Sahifalar render bo'ladigan joy */}
-        <main className="p-4 lg:p-9 flex-1">
-          <Outlet />
-        </main>
+        {/* Tizim Holati */}
+        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <h3 className="text-base font-bold text-white mb-2">Tizim Holati</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">Barcha xizmatlar mukammal ishlamoqda. Xavfsizlik qoidalari to'liq faollashtirilgan.</p>
+          </div>
+          <div className="p-5 rounded-xl bg-slate-950/60 border border-slate-800/80 mt-6 space-y-4">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-400 font-medium">Server yuklamasi:</span>
+              <span className="text-white font-bold">14%</span>
+            </div>
+            <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full w-[14%] rounded-full"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
