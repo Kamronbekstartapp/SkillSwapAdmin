@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, Shield, Trash2, Mail, UserCheck } from 'lucide-react';
+import { Filter, Shield, Trash2, Mail, AlertTriangle } from 'lucide-react';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase'; // Firebase bazasiga ulanish
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal uchun state'lar
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   // Firebase Firestore'dan real foydalanuvchilarni olib kelish
   useEffect(() => {
@@ -27,13 +31,22 @@ export default function AdminUsers() {
     fetchUsersFromFirebase();
   }, []);
 
-  // Foydalanuvchini Firebase bazasidan o'chirish
-  const handleDeleteUser = async (id) => {
-    if (!window.confirm("Rostdan ham bu foydalanuvchini o'chirmoqchimisiz?")) return;
+  // O'chirish tugmasi bosilganda modalni ochish
+  const openDeleteModal = (user) => {
+    setUserToDelete(user);
+    setDeleteModalOpen(true);
+  };
+
+  // Foydalanuvchini Firebase bazasidan haqiqiy o'chirish
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    const targetId = userToDelete.id || userToDelete.uid;
 
     try {
-      await deleteDoc(doc(db, "users", id));
-      setUsers(users.filter(user => user.id !== id && user.uid !== id));
+      await deleteDoc(doc(db, "users", targetId));
+      setUsers(users.filter(user => (user.id !== targetId && user.uid !== targetId)));
+      setDeleteModalOpen(false);
+      setUserToDelete(null);
     } catch (error) {
       console.error("O'chirishda xatolik:", error);
       alert("Foydalanuvchini o'chirib bo'lmadi.");
@@ -67,7 +80,7 @@ export default function AdminUsers() {
         </div>
       ) : (
         <>
-          {/* 1. TELEFONLAR UCHUN KARTALAR KO'RINISHI (Faqat sm dan kichik ekranlarda ko'rinadi) */}
+          {/* 1. TELEFONLAR UCHUN KARTALAR KO'RINISHI */}
           <div className="grid grid-cols-1 gap-4 sm:hidden">
             {users.map((u) => (
               <div key={u.id || u.uid} className="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 space-y-4 shadow-md">
@@ -84,7 +97,7 @@ export default function AdminUsers() {
                     </div>
                   </div>
                   <button 
-                    onClick={() => handleDeleteUser(u.id || u.uid)}
+                    onClick={() => openDeleteModal(u)}
                     className="p-2 bg-rose-500/10 rounded-xl text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
                     title="O'chirish"
                   >
@@ -105,7 +118,7 @@ export default function AdminUsers() {
             ))}
           </div>
 
-          {/* 2. KOMPYUTER VA PLANSHETLAR UCHUN JADVAL KO'RINISHI (Faqat sm va undan katta ekranlarda) */}
+          {/* 2. KOMPYUTER VA PLANSHETLAR UCHUN JADVAL KO'RINISHI */}
           <div className="hidden sm:block bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -141,7 +154,7 @@ export default function AdminUsers() {
                       </td>
                       <td className="py-4 px-6 text-right">
                         <button 
-                          onClick={() => handleDeleteUser(u.id || u.uid)}
+                          onClick={() => openDeleteModal(u)}
                           className="p-2 hover:bg-rose-500/10 rounded-lg text-slate-400 hover:text-rose-400 transition-all cursor-pointer"
                           title="Foydalanuvchini o'chirish"
                         >
@@ -155,6 +168,37 @@ export default function AdminUsers() {
             </div>
           </div>
         </>
+      )}
+
+      {/* O'CHIRISHNI TASDIQLASH MODAL OYNASI (O'rtadagi div) */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mx-auto">
+              <AlertTriangle size={24} />
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="text-lg font-bold text-white">Foydalanuvchini o'chirish</h3>
+              <p className="text-xs text-slate-400">
+                Haqiqatan ham <span className="text-white font-semibold">{userToDelete?.username || userToDelete?.name || 'bu foydalanuvchini'}</span> o'chirib yubormoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all cursor-pointer"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={confirmDeleteUser}
+                className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-rose-600/25 transition-all cursor-pointer"
+              >
+                O'chirish
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
