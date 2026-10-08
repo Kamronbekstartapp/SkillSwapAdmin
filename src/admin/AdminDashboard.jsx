@@ -107,7 +107,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Xavfsizlik Ogohlantirishi */}
-        {/* <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl relative overflow-hidden shadow-xl hover:border-rose-500/30 transition-all group sm:col-span-2 lg:col-span-1">
+         <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl relative overflow-hidden shadow-xl hover:border-rose-500/30 transition-all group sm:col-span-2 lg:col-span-1">
           <div className="flex justify-between items-start">
             <div>
               <span className="text-xs font-semibold tracking-wider uppercase text-slate-400">Xavfsizlik Ogohlantirishi</span>
@@ -125,8 +125,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Oxirgi faoliyatlar va jadval (Kompyuter uchun kengaytirilgan qism) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* So'nggi ro'yxatdan o'tgan real foydalanuvchilar */}
+      {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -160,7 +159,7 @@ export default function AdminDashboard() {
               )}
             </div>
           </div>
-        </div> */}
+        </div>  */}
 
         {/* Tizim Holati */}
         <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
