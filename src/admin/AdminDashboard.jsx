@@ -125,7 +125,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Oxirgi faoliyatlar va jadval (Kompyuter uchun kengaytirilgan qism) */}
-      {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
               )}
             </div>
           </div>
-        </div>  */}
+        </div>  
 
         {/* Tizim Holati */}
         <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
